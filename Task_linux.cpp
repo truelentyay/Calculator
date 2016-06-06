@@ -197,6 +197,129 @@ double find_result(std::string input){
 	return result;
 }
 
+
+
+class node {
+    std::string value, oper;
+    node *l, *r;
+    double res;
+public:
+    node (std::string v = "", std::string o = ""){
+            value = v;
+            oper = o;
+            *l = 0;
+            *r = 0;
+            res = 0;
+    }
+
+    double calculate(node *&tree, double arg1, double arg2, std::string oper){
+        if (tree != 0){
+            calculate(l);
+            double res_number = 0.0;
+            double arg1_number = 0.0;
+            arg1_number = atof(arg1.c_str()); //string to double number
+            double op2_number = 0.0;
+            arg2_number = atof(arg2.c_str());
+            res = binary_operation(*l, *r, oper);
+            calculate(r);
+            return res;
+        }
+    }
+
+    void add(std::string v, node *&new_tree){
+        if (new_tree == 0){
+            std::string lexp = "";
+            std::string rexp = "";
+            new_tree = new node;
+            value = v;
+            oper = find_first_max_priority(value);
+            lexp = left(value, oper);
+            rexp = right(value, oper);
+            l = r = 0;
+            if(lexp != ""){
+                if (new_tree != 0) add(lexp, l);
+                else{
+                    new_tree = new node;
+                    value = v;
+                    oper = find_first_max_priority(value);
+                    lexp = left(value, oper);
+                    rexp = right(value, oper);
+                    l = r = 0;
+                }
+            }
+            if (rexp != 0){
+                if (new_tree != 0) add(rexp, r);
+                else{
+                    new_tree = new node;
+                    value = v;
+                    oper = find_first_max_priority(value);
+                    rexp = right(value, oper);
+                    rexp = right(value, oper);
+                    l = r = 0;
+                }
+            }
+        }
+};
+
+std::string binary_operation(double arg1, double arg2, double oper){
+    double res;
+    bool flag = false; // true - operation is correct
+    if (oper == add){
+        res = arg1 + arg2; flag = true;
+    }
+    if (oper == sub){
+        res = arg1 - arg2; flag = true;
+    }
+    if (oper == mul){
+        res = arg1*arg2; flag = true;
+    }
+    if (oper == divi){
+        if (arg2 != 0)
+            res = arg1 / arg2;
+        else
+            throw std::runtime_error("Result is not a number!");
+        flag = true;
+    }
+    if (!flag) throw std::runtime_error("Expression is not found!");
+    return res;
+}
+
+std::string find_first_max_priority(std::string str){
+    size_t pos1, pos2, pos3, pos4;
+    pos1 = str.find_first_of(mul);
+    pos2 = str.find_first_of(divi);
+    pos3 = str.find_first_of(add);
+    pos4 = str.find_first_of(sub);
+    if (pos1 != std::string::npos || pos2 != std::string::npos)
+        if (pos1 < pos2)
+            return mul;
+        else return divi;
+    else
+        if (pos3 != std::string::npos || pos4 != std::string::npos)
+            if (pos3 < pos4)
+                return add;
+            else return sub;
+        else return "";
+}
+
+std::string left  (std::string str, std::string oper){
+    std::string left = "";
+    size_t pos;
+    pos = str.find_first_of(oper);
+    if (pos!=std::string::npos)
+        left = str.substr(0, pos-1);
+    return left;
+}
+std::string right  (std::string str, std::string oper){
+    std::string right = "";
+    size_t pos;
+    pos = str.find_first_of(oper);
+    if (pos!=std::string::npos)
+        right = str.substr(pos);
+    return right;
+}
+
+
 #include <cstdio>
 const int ESC = 27;
 
