@@ -14,219 +14,54 @@ const std::string add = "+";
 const std::string sub = "-";
 const std::string mul = "*";
 const std::string divi = "/";
-
-// To make to_str in linux
-template <typename T>
-std::string ToString(T val)
-{
-   std::stringstream stream;
-   stream << val;
-   return stream.str();
-}
-
-// A function to calculate operation
-std::string binary_operation(std::string op1, std::string op2, std::string operation){
-	std::string res;
-	bool flag = false; // true - operation is correct
-	double res_number = 0.0;
-	double op1_number = 0.0;
-	op1_number = atof(op1.c_str()); //string to double number
-	double op2_number = 0.0;
-	op2_number = atof(op2.c_str());
-	if (operation == add){
-		res_number = op1_number + op2_number; flag = true;
-	}
-	if (operation == sub){
-		res_number = op1_number - op2_number; flag = true;
-	}
-	if (operation == mul){
-		res_number = op1_number*op2_number; flag = true;
-	}
-	if (operation == divi){
-		if (op2_number != 0)
-			res_number = op1_number / op2_number; 
-		else
-			throw std::runtime_error("Result is not a number!");
-		flag = true;
-	}
-	if (!flag) throw std::runtime_error("Expression is not found!");;
-	res = ToString(res_number); 
-	return res;
-}
-
-// A function to find left argument
-std::string take_left_number(size_t pos, std::string expression){
-	std::string left_number = "";
-	if (!std::isdigit(expression[pos - 1]))  //invalid argument
-		throw std::runtime_error("Wrong expression!");
-	if (pos != 0 && std::isdigit(expression[pos - 1]))
-		while (pos != 0 && (std::isdigit(expression[pos-1]) || expression[pos-1] == '.')){
-			left_number = expression[pos-1] + left_number;
-			pos--;
-		}
-	if (pos != 0 && expression[pos-1] == '-' && std::isdigit(expression[pos]) && !std::isdigit(expression[pos-2])){ //negative number
-		left_number = expression[pos-1];
-		while ((std::isdigit(expression[pos]) || expression[pos] == '.')){
-			left_number = left_number + expression[pos];
-			pos++;
-		}
-	}
-	return std::string(left_number);
-}
-
-// A function to find right argument
-std::string take_right_number(size_t pos, std::string expression){
-	std::string right_number = "";
-	size_t old_pos = pos;
-	if (expression[pos + 1] != '-' && std::isdigit(expression[pos + 1]))
-		while (  (std::isdigit(expression[pos+1]) || expression[pos+1] == '.')){
-			right_number = right_number + expression[pos+1];
-			pos++;
-		}
-	if (expression[old_pos + 1] == '-' && std::isdigit(expression[old_pos + 2])){ //negative number
-		pos = old_pos;
-		right_number = expression[pos + 1];
-		while ((std::isdigit(expression[pos + 2]) || expression[pos + 2] == '.')){
-			right_number = right_number + expression[pos + 2];
-			pos++;
-		}
-	}
-	if (!std::isdigit(expression[old_pos + 1]) && expression[old_pos + 1] != '-') //invalid argument
-		throw std::runtime_error("Wrong expression!");
-	return std::string(right_number);
-}
-
-// A function to find an expresion and a result of operation
-std::string find_expression(std::string input, std::string operation1, std::string operation2){
-	std::string res, op1, op2, expression, output = "";
-	size_t pos1, pos2, min_pos = 0, pos_of_exp;
-	std::string operation;
-	while (output != input){
-		output = input;
-		pos1 = output.find_first_of(operation1, 1); //find needed operations
-		pos2 = output.find_first_of(operation2, 1);
-		if (pos1 != std::string::npos || pos2 != std::string::npos){
-			if (pos1 < pos2){ //right order
-				min_pos = pos1;
-				operation = operation1;
-			}
-			else{
-				min_pos = pos2;
-				operation = operation2;
-			}
-				op1 = take_left_number(min_pos, output);
-				op2 = take_right_number(min_pos, output);
-				res = binary_operation(op1, op2, operation);
-				expression = op1 + std::string(operation) + op2;
-				pos_of_exp = output.find(expression);
-				output = output.replace(pos_of_exp, expression.length(), res); //replace expression on result
-				input = output;
-				output = "";
-		} //do while there's no more needed operations
-	}
-	return output;
-}
-
-// A function to find an expression in brackets
-std::string find_brackets(std::string input){
-	std::string res, expression, output = "";
-	size_t begin_pos, end_pos;
-	while (output != input){
-		output = input;
-		begin_pos = output.find_last_of("(");
-		end_pos = output.find_first_of(")", begin_pos);
-		if (begin_pos != std::string::npos && end_pos != std::string::npos){
-			if (begin_pos < end_pos){
-				expression = output.substr(begin_pos + 1, end_pos - begin_pos - 1);
-				res = expression;
-				res = find_expression(res, mul, divi);
-				res = find_expression(res, sub, add);
-				output = output.replace(begin_pos, expression.length()+2, res);
-				input = output;
-				output = "";
-			}
-			else
-				throw std::runtime_error("Wrong expression!");
-		}
-		if ((begin_pos == std::string::npos && end_pos != std::string::npos) || (begin_pos != std::string::npos && end_pos == std::string::npos))
-			throw std::runtime_error("Expected '(' or ')'");
-	}
-	return output;
-}
-
-// Check a result
-std::string is_number(std::string input){
-	bool f = false;
-	std::string res = input;
-	if (std::isdigit(input[0]) || input[0] == '-')
-		for (unsigned int i = 1; i < input.length(); i++)
-			if (std::isdigit(input[i]) || input[i] == '.')
-				f = true;
-			else{
-				f = false;
-				res = "";
-				break;
-			}
-	else{
-		f = false;
-		res = "";
-	}
-	size_t pos;
-	pos = input.find_first_of(".");
-	if (f && pos != std::string::npos && (pos+4)<input.length())
-		res = input.substr(0, pos+4); //take 3 signs after a dot
-	return res;
-}
-
-// Calculate a result
-double find_result(std::string input){
-	std::string output;
-	double result = 0.0;
-	for (std::string::iterator it = input.begin(); it<input.end(); ++it) {
-		if (*it == ' ') input.erase(it); //cut spaces
-	}
-	output = input;
-	output = find_brackets(output); //priority = 1
-	output = find_expression(output, mul, divi); //priority = 2
-	output = find_expression(output, sub, add); //priority = 3
-	output = is_number(output);
-	if (output != "")
-		result = atof(output.c_str()); //take result
-	else
-		throw std::runtime_error("Wrong expression!");
-	return result;
-}
-
-
-
+/*
 class node {
     std::string value, oper;
     node *l, *r;
     double res;
+    std::string binary_operation();
+    std::string find_first_max_priority();
+    std::string left();
+    std::string right();
 public:
     node (std::string v = "", std::string o = ""){
             value = v;
             oper = o;
-            *l = 0;
-            *r = 0;
+            node *l = 0;
+            node *r = 0;
             res = 0;
     }
 
-    double calculate(node *&tree, double arg1, double arg2, std::string oper){
-        if (tree != 0){
+    node *lnode(){
+        return l;
+    }
+    node *rnode(){
+        return r;
+    }
+    std::string op(){
+        return oper;
+    }
+    std::string val(){
+        return value;
+    }
+
+    double calculate(node *&tree){
+        if (tree->lnode() != 0 && tree->rnode() != 0){
             calculate(l);
-            double res_number = 0.0;
-            double arg1_number = 0.0;
-            arg1_number = atof(arg1.c_str()); //string to double number
-            double op2_number = 0.0;
-            arg2_number = atof(arg2.c_str());
-            res = binary_operation(*l, *r, oper);
+            double res = 0.0;
+            double arg1 = 0.0;
+            double arg2 = 0.0;
+
+            arg1 = atof(l->val().c_str()); //string to double number
+            arg2 = atof(r->val().c_str());
+
+            res = binary_operation(arg1, arg2, oper);
             calculate(r);
             return res;
         }
     }
 
-    void add(std::string v, node *&new_tree){
+    void add_node(std::string v, node *&new_tree){
         if (new_tree == 0){
             std::string lexp = "";
             std::string rexp = "";
@@ -237,7 +72,7 @@ public:
             rexp = right(value, oper);
             l = r = 0;
             if(lexp != ""){
-                if (new_tree != 0) add(lexp, l);
+                if (new_tree != 0) add_node(lexp, l);
                 else{
                     new_tree = new node;
                     value = v;
@@ -248,7 +83,7 @@ public:
                 }
             }
             if (rexp != 0){
-                if (new_tree != 0) add(rexp, r);
+                if (new_tree != 0) add_node(rexp, r);
                 else{
                     new_tree = new node;
                     value = v;
@@ -259,9 +94,12 @@ public:
                 }
             }
         }
+    }
 };
 
-std::string binary_operation(double arg1, double arg2, double oper){
+
+
+std::string binary_operation(double arg1, double arg2, std::string oper){
     double res;
     bool flag = false; // true - operation is correct
     if (oper == add){
@@ -299,7 +137,7 @@ std::string find_first_max_priority(std::string str){
             if (pos3 < pos4)
                 return add;
             else return sub;
-        else return "";
+        else return str;
 }
 
 std::string left  (std::string str, std::string oper){
@@ -317,7 +155,76 @@ std::string right  (std::string str, std::string oper){
     if (pos!=std::string::npos)
         right = str.substr(pos);
     return right;
-}
+}*/
+
+class NodeBase{
+public:
+    double eval(){
+        double result = 0;
+        return result;
+    }
+};
+
+class Node : public NodeBase{
+public:
+    Node(){
+        value = 0;
+    }
+    Node(double v){
+        value = v;
+    }
+
+    double eval(){
+        double result = 0;
+        result = value;
+        return result;
+    }
+private:
+    double value;
+};
+
+class NodeOperator : public NodeBase{
+public:
+    NodeOperator(std::string op){
+        operation = op;
+        left = 0;
+        right = 0;
+    }
+
+    double eval(){
+        double result = 0;
+        result = calculate(*left, *right, operation);
+        return result;
+    }
+    double calculate(double arg1, double arg2, std::string op){
+        double ans = 0;
+        switch(operation){
+        case "+":
+            ans = arg1+arg2;
+            break;
+        case "-":
+            ans = arg1-arg2;
+            break;
+        case "*":
+            ans = arg1*arg2;
+            break;
+        case "/":
+            if (arg2 != 0)
+                ans = arg1/arg2;
+            else
+                std::cerr << "Ans = inf." << std::endl;
+            break;
+        default:
+            std::cerr << "Operation is not correct!" << std::endl;
+        }
+
+    }
+
+private:
+    std::string operation;
+    NodeBase* left;
+    NodeBase* right;
+};
 
 
 #include <cstdio>
@@ -333,11 +240,12 @@ int main(){
 	while (true){
 		std::string input, dummy;
 		double result = 0.0;
+        node *tree = 0;
                 
 		std::cout << "Enter an expression: ";
 		std::getline(std::cin ,input); //read line
 		try{
-			result = find_result(input);
+
 			std::cout << input << " = " << result << "\n"; 
 		}
 		catch (std::exception& e) {
