@@ -8,12 +8,13 @@
 #include <iostream>
 #include <cstdlib>
 #include <sstream>
+#include <cassert>
 
 // Correct operations
-const std::string add = "+";
-const std::string sub = "-";
-const std::string mul = "*";
-const std::string divi = "/";
+//const std::string add = "+";
+//const std::string sub = "-";
+//const std::string mul = "*";
+//const std::string divi = "/";
 /*
 class node {
     std::string value, oper;
@@ -157,74 +158,35 @@ std::string right  (std::string str, std::string oper){
     return right;
 }*/
 
-class NodeBase{
-public:
-    double eval(){
-        double result = 0;
-        return result;
-    }
-};
 
-class Node : public NodeBase{
-public:
-    Node(){
-        value = 0;
-    }
-    Node(double v){
-        value = v;
-    }
 
-    double eval(){
-        double result = 0;
-        result = value;
-        return result;
-    }
-private:
-    double value;
-};
+void test_nodes()
+{
+    Node n1(5), n2(7), n3(6);
+    NodeOperatorPlus plus(n1, n2);
+    assert(plus.eval() == 12);
 
-class NodeOperator : public NodeBase{
-public:
-    NodeOperator(std::string op){
-        operation = op;
-        left = 0;
-        right = 0;
-    }
+    NodeOperatorMinus minus(plus, n3);
+    assert(minus.eval() == 6);
 
-    double eval(){
-        double result = 0;
-        result = calculate(*left, *right, operation);
-        return result;
-    }
-    double calculate(double arg1, double arg2, std::string op){
-        double ans = 0;
-        switch(operation){
-        case "+":
-            ans = arg1+arg2;
-            break;
-        case "-":
-            ans = arg1-arg2;
-            break;
-        case "*":
-            ans = arg1*arg2;
-            break;
-        case "/":
-            if (arg2 != 0)
-                ans = arg1/arg2;
-            else
-                std::cerr << "Ans = inf." << std::endl;
-            break;
-        default:
-            std::cerr << "Operation is not correct!" << std::endl;
-        }
+    NodeOperatorTimes multiply(minus, minus);
+    assert(multiply.eval() == 36);
 
-    }
+    NodeOperatorDivide divi(plus, minus);
+    assert(divi.eval() == 2);
 
-private:
-    std::string operation;
-    NodeBase* left;
-    NodeBase* right;
-};
+    std::cout << "Done!" << std::endl;
+}
+
+void test_Parser()
+{
+    Parser parser;
+
+    NodeBase expression = parser.parse("");
+    assert(expression.eval() == ??);
+
+}
+
 
 
 #include <cstdio>
@@ -237,25 +199,28 @@ int main(){
 	std::cout << "|            multiplication and division                   |\n";
 	std::cout << "|             written by Mishkina Elena.                   |\n";
 	std::cout << " ----------------------------------------------------------\n\n";
-	while (true){
-		std::string input, dummy;
-		double result = 0.0;
-        node *tree = 0;
-                
-		std::cout << "Enter an expression: ";
-		std::getline(std::cin ,input); //read line
-		try{
 
-			std::cout << input << " = " << result << "\n"; 
-		}
-		catch (std::exception& e) {
-			std::cout << input << " : exception: " << e.what() << '\n';
-		}
-		std::cout << "Press ESC to exit or any other key to continue: ";
-		if (std::cin.get() == ESC)
-			break;
-                std::getline(std::cin, dummy); //clean stream
-	} 
+    test_nodes();
+
+//	while (true){
+//		std::string input, dummy;
+//		double result = 0.0;
+//        NodeOperator* plus();
+                
+//		std::cout << "Enter an expression: ";
+//		std::getline(std::cin ,input); //read line
+//		try{
+
+//			std::cout << input << " = " << result << "\n";
+//		}
+//		catch (std::exception& e) {
+//			std::cout << input << " : exception: " << e.what() << '\n';
+//		}
+//		std::cout << "Press ESC to exit or any other key to continue: ";
+//		if (std::cin.get() == ESC)
+//			break;
+//                std::getline(std::cin, dummy); //clean stream
+//	}
 	return 0;
 }
 
