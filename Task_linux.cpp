@@ -9,12 +9,14 @@
 #include <cstdlib>
 #include <sstream>
 #include <cassert>
+#include <cstddef>
+#include "nodes.h"
 
 // Correct operations
-//const std::string add = "+";
-//const std::string sub = "-";
-//const std::string mul = "*";
-//const std::string divi = "/";
+const std::string add = "+";
+const std::string sub = "-";
+const std::string mul = "*";
+const std::string divi = "/";
 /*
 class node {
     std::string value, oper;
@@ -159,6 +161,101 @@ std::string right  (std::string str, std::string oper){
 }*/
 
 
+class Parser
+{
+public:
+    NodeBase* parse(std::string str)
+    {
+        NodeBase* operation = NULL;
+        std::string op = find_first_min_priority(str);
+        std::string l=find_left(str,op);
+        std::string r=find_right(str,op);
+        if (op == l)
+        {
+            if (op == r)
+            {
+                operation = binary_operation(atof(l.c_str()), atof(r.c_str()), op);
+            }
+            else
+            {
+                operation = parse(r);
+            }
+        }
+        else
+        {
+            operation = parse(l);
+        }
+        return operation;
+    }
+
+    std::string find_first_min_priority(std::string str)
+    {
+        size_t pos1, pos2, pos3, pos4;
+        pos1 = str.find_first_of(mul);
+        pos2 = str.find_first_of(divi);
+        pos3 = str.find_first_of(add);
+        pos4 = str.find_first_of(sub);
+        if (pos3 != std::string::npos || pos4 != std::string::npos)
+        {
+            if (pos3 < pos4)
+                return add;
+            else return sub;
+        }
+        else
+        {
+            if (pos1 != std::string::npos || pos2 != std::string::npos)
+            {
+                if (pos1 < pos2)
+                    return mul;
+                else return divi;
+            }
+            else return str;
+        }
+
+    }
+
+    std::string find_left  (std::string str, std::string oper)
+    {
+        std::string left = "";
+        size_t pos;
+        pos = str.find_first_of(oper);
+        if (pos!=std::string::npos)
+            left = str.substr(0, pos-1);
+        return left;
+    }
+    std::string find_right  (std::string str, std::string oper)
+    {
+        std::string right = "";
+        size_t pos;
+        pos = str.find_first_of(oper);
+        if (pos!=std::string::npos)
+            right = str.substr(pos);
+        return right;
+    }
+
+    NodeBase* binary_operation(NodeBase* left, NodeBase* right, char op)
+    {
+        NodeBase* operation = NULL;
+        if (op == add)
+        {
+            operation = new NodeOperatorPlus(left, right);
+        }
+        else if (op == sub)
+        {
+            operation = new NodeOperatorMinus(left, right);
+        }
+        else if (op == mul)
+        {
+            operation = new NodeOperatorTimes(left, right);
+        }
+        else if (op == divi)
+        {
+            operation = new NodeOperatorDivide(left, right);
+        }
+
+        return operation;
+    }
+};
 
 void test_nodes()
 {
@@ -169,8 +266,8 @@ void test_nodes()
     NodeOperatorMinus minus(plus, n3);
     assert(minus.eval() == 6);
 
-    NodeOperatorTimes multiply(minus, minus);
-    assert(multiply.eval() == 36);
+    NodeOperatorTimes tim(minus, minus);
+    assert(tim.eval() == 36);
 
     NodeOperatorDivide divi(plus, minus);
     assert(divi.eval() == 2);
@@ -182,8 +279,9 @@ void test_Parser()
 {
     Parser parser;
 
-    NodeBase expression = parser.parse("");
-    assert(expression.eval() == ??);
+    NodeBase expression = parser.parse("3*5+4/2-1");
+    assert(expression.eval() == 16);
+
 
 }
 

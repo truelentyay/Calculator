@@ -1,4 +1,10 @@
 #include "nodes.h"
+#include <cstddef>
+
+double NodeBase::eval()
+{
+
+}
 
 Node::Node(double v)
 {
@@ -15,6 +21,12 @@ NodeOperator::NodeOperator(NodeBase &left, NodeBase &right)
     , m_right(right)
 {
 }
+
+//NodeOperator::NodeOperator()
+//    : m_left(NULL)
+//    , m_right(NULL)
+//{
+//}
 
 NodeOperatorPlus::NodeOperatorPlus(NodeBase &left, NodeBase &right) : NodeOperator(left, right)
 {}
@@ -47,3 +59,6 @@ double NodeOperatorDivide::eval()
 {
    return m_left.eval()/m_right.eval();
 }
+
+
+

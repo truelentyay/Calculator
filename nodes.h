@@ -26,6 +26,7 @@ class NodeOperator : public NodeBase
 public:
 
     NodeOperator(NodeBase& left, NodeBase& right);
+//    NodeOperator();
 
     virtual double eval() = 0;
 
