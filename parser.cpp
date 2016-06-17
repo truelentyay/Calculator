@@ -2,6 +2,7 @@
 #include <cstddef>
 #include <string>
 #include <cstdlib>
+#include <iostream>
 
 NodeBase* Parser::parse(std::string str)
 {
@@ -41,22 +42,35 @@ NodeBase* Parser::parse(std::string str)
     */
 
 
-
+    if (str == "")
+    {
+        return m_node = NULL;
+    }
 
 
     m_node = NULL;
     //size_t i = fnd_begin(str);
-    size_t i = 1, j = -1, k = -1;
+    size_t j = std::string::npos, k = std::string::npos;
+    size_t i = fnd_operator(str);
+    if (i == std::string::npos)
+    {
+        return m_node = NULL;
+    }
     std::string left = "";
     std::string right = "";
-    if (i+2 == '(')
+    if (str[i+2] == '(')
     {
         j = fnd_arg_end(i+2, str);
-        left = str.substr(i+2,j-(i+2)-1);
-        if (j+2 == '(')
+        if (j == 0)
         {
-        right = str.substr(j+2,str.length()-(j+2)-3);
-        m_node = binary_operation(parse(left),  parse(right), str[i]);
+            return m_node = NULL;
+        }
+        left = str.substr(i+2,j-(i+1));
+        right = str.substr(j+2,str.length()-(j+2)-1);
+        if (right[0] == '(')
+        {
+            //right = str.substr(j+2,str.length()-(j+2)-1);
+            m_node = binary_operation(parse(left),  parse(right), str[i]);
         }
         else
         {
@@ -67,12 +81,21 @@ NodeBase* Parser::parse(std::string str)
     else
     {
         k = fnd_next_space(i+2, str);
-        left = str.substr(i+2,k-(i+2)-1);
-        l_node = new Node(atof(left.c_str()));
-        if (k+1 == '(')
+        left = str.substr(i+2,k-(i+2));
+        if (left == "")
         {
-        right = str.substr(k+1,str.length()-(k+1)-3);
-        m_node = binary_operation(l_node,  parse(right), str[i]);
+            return m_node = NULL;
+        }
+        double d = atof(left.c_str());
+        l_node = new Node(d);
+        right = str.substr(k+1,str.length()-(k+1)-1);
+        if (right[0] == '(')
+        {
+            if (right == "")
+            {
+                return m_node = NULL;
+            }
+            m_node = binary_operation(l_node,  parse(right), str[i]);
         }
         else
         {
@@ -86,11 +109,10 @@ NodeBase* Parser::parse(std::string str)
 
 size_t Parser::fnd_arg_end(size_t pos, std::string str)
 {
-    int f;
-    size_t i = 0;
-    for (i = pos; i < str.length() && f != 0; i++)
+    int f = 0;
+    size_t i;
+    for (i = pos; i < str.length(); i++)
     {
-        f = 0;
         if (str[i]=='(')
         {
             f++;
@@ -99,9 +121,13 @@ size_t Parser::fnd_arg_end(size_t pos, std::string str)
         {
             f--;
         }
-        i++;
+        if (f == 0)
+        {
+            return i;
+        }
+
     }
-    return i;
+    return 0;
 
 }
 
@@ -115,11 +141,23 @@ size_t Parser::fnd_next_space(size_t pos, std::string str)
     }
     else
     {
-        return -1;
+        return std::string::npos;
     }
 
 }
 
+size_t Parser::fnd_operator(std::string str)
+{
+    if (str.find_first_of("+") == std::string::npos && str.find_first_of("-") == std::string::npos && str.find_first_of("*") == std::string::npos && str.find_first_of("/") == std::string::npos)
+    {
+        return std::string::npos;
+    }
+    else
+    {
+        return 1;
+    }
+
+}
 
 NodeBase* Parser::binary_operation(NodeBase* left, NodeBase* right, char op)
 {

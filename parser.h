@@ -14,6 +14,7 @@ public:
     NodeBase* parse(std::string str);
     size_t fnd_arg_end(size_t pos, std::string str);
     size_t fnd_next_space(size_t pos, std::string str);
+    size_t fnd_operator(std::string str);
     NodeBase* binary_operation(NodeBase* left, NodeBase* right, char op);
     ~Parser();
 };

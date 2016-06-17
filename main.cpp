@@ -12,6 +12,21 @@
 #include <cstddef>
 #include "nodes.h"
 #include "parser.h"
+#include "process.h"
+
+void iAssert(bool expression, const std::string& description)
+{
+    if (expression)
+    {
+        std::cout << "[V]";
+    }
+    else
+    {
+        std::cout << "[-]";
+    }
+
+    std::cout << " " << description << std::endl;
+}
 
 void test_nodes()
 {
@@ -44,84 +59,87 @@ void test_nodes()
 
 void test_Parser()
 {
-    Parser *parser;
+    Parser parser;
+    std::string str = "(+ 1 1)";
+    NodeBase* exp1 = parser.parse(str);
+    iAssert(exp1->eval() == 2, "Test 1");
 
-    NodeBase* exp1 = parser->parse("(+ 1 1)");
-    assert(exp1->eval() == 2);
+    str = "(- 1 (+ 1 1))";
+    NodeBase* exp2 = parser.parse(str);
+    iAssert(exp2->eval() == -1, "Test 2");
 
-    NodeBase* exp2 = parser->parse("(- 1 (+ 1 1))");
-    assert(exp2->eval() == 1);
+    size_t pos1 = parser.fnd_operator(str);
+    iAssert(pos1 == 1, "Test fnd_operator");
 
-    NodeBase* exp3 = parser->parse("(* (- 1 (+ 1 1)) (+ 1 1))");
-    assert(exp3->eval() == 2);
+    size_t pos2 = parser.fnd_arg_end(5, str);
+    iAssert(pos2 == 11, "Test fnd_arg_end");
 
-    NodeBase* exp4 = parser->parse("(/ 15 15)");
-    assert(exp4->eval() == 2);
+    size_t pos3 = parser.fnd_next_space(3, str);
+    iAssert(pos3 == 4, "Test fnd_nxt_space");
 
-    assert(parser->parse("") == NULL);
+    str = "(* (- 1 (+ 1 1)) (+ 1 1))";
+    NodeBase* exp3 = parser.parse(str);
+    iAssert(exp3->eval() == -2, "Test 3");
 
-    NodeBase* exp5 = parser->parse("55");
-    assert(exp5->eval() == 55);
+    str = "(/ 15 15)";
+    NodeBase* exp4 = parser.parse(str);
+    iAssert(exp4->eval() == 1, "Test 4");
 
-    NodeBase* exp6 = parser->parse("(55)");
-    assert(exp6->eval() == 55);
+    str = "(+ 1 1)";
+    iAssert(parser.parse("") == NULL, "Test 5");
 
-    assert(parser->parse("( )") == NULL);
+//    str = "55";
+//    NodeBase* exp5 = parser.parse(str);
+//    iAssert(exp5->eval() == 55, "Test 6");
 
-    assert(parser->parse("(+)") == NULL);
+//    str = "(55)";
+//    NodeBase* exp6 = parser.parse(str);
+//    iAssert(exp6->eval() == 55, "Test 7");
 
-    assert(parser->parse("abc") == NULL);
+    str = "( )";
+    iAssert(parser.parse(str) == NULL, "Test 8");
 
+    str = "(+)";
+    iAssert(parser.parse(str) == NULL, "Test 9");
 
+    str = "abc";
+    iAssert(parser.parse(str) == NULL, "Test 10");
 
-
-    NodeBase *expression = parser->parse("(- (+ (* 3 5) (/ 4 2)) 1)");  //3*5+4/2-1");
-    assert(expression->eval() == 16);
-
+    str = "(- (+ (* 3 5) (/ 4 2)) 1)";
+    NodeBase *expression = parser.parse(str);  //3*5+4/2-1");
+    iAssert(expression->eval() == 16, "Test 11");
 
 }
 
 
+void performTests()
+{
+    test_nodes();
+    test_Parser();
+}
 
 
 #include <cstdio>
 const int ESC = 27;
 
 int main(){
-	std::cout << " ----------------------------------------------------------\n";
-	std::cout << "|                          Hello!                          |\n";
-	std::cout << "|    This is a program for addition, substraction,         |\n";
-	std::cout << "|            multiplication and division                   |\n";
-	std::cout << "|             written by Mishkina Elena.                   |\n";
-	std::cout << " ----------------------------------------------------------\n\n";
 
-    test_Parser();
-//    std::string input;
-//    std::cout << "Enter an expression: ";
-//    std::getline(std::cin ,input); //read line
-//    Parser *parser;
-//    NodeBase *expression = parser->parse(input);  //3*5+4/2-1");
-//    std::cout << input << " = " << expression->eval() << std::endl;
 
-//	while (true){
-//		std::string input, dummy;
-//		double result = 0.0;
-//        NodeOperator* plus();
-                
-//		std::cout << "Enter an expression: ";
-//		std::getline(std::cin ,input); //read line
-//		try{
+    try
+    {
+        performTests();
+        Process process;
+        return process.run();
+    }
+    catch (std::exception e)
+    {
+        std::cerr << e.what() << std::endl;
+    }
+    catch (...)
+    {
+        std::cerr << "Some exception" << std::endl;
+    }
 
-//			std::cout << input << " = " << result << "\n";
-//		}
-//		catch (std::exception& e) {
-//			std::cout << input << " : exception: " << e.what() << '\n';
-//		}
-//		std::cout << "Press ESC to exit or any other key to continue: ";
-//		if (std::cin.get() == ESC)
-//			break;
-//                std::getline(std::cin, dummy); //clean stream
-//	}
-	return 0;
+    return -1;
 }
 

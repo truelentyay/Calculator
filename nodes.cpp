@@ -1,5 +1,5 @@
 #include "nodes.h"
-
+#include <cstddef>
 
 double NodeBase::eval()
 {
