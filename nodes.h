@@ -11,10 +11,8 @@ public:
 class Node : public NodeBase
 {
 public:
-
     Node(double v);
     virtual double eval();
-
 private:
     double m_value;
 };
@@ -24,43 +22,38 @@ private:
 class NodeOperator : public NodeBase
 {
 public:
-
-    NodeOperator(NodeBase& left, NodeBase& right);
-//    NodeOperator();
-
+    NodeOperator(NodeBase *left, NodeBase *right);
     virtual double eval() = 0;
-
-
 protected:
-    NodeBase& m_left;
-    NodeBase& m_right;
+    NodeBase *m_left;
+    NodeBase *m_right;
 };
 
 class NodeOperatorPlus : public NodeOperator
 {
 public:
-    NodeOperatorPlus(NodeBase& left, NodeBase& right);
+    NodeOperatorPlus(NodeBase *left, NodeBase *right);
     virtual double eval();
 };
 
 class NodeOperatorMinus : public NodeOperator
 {
 public:
-    NodeOperatorMinus(NodeBase& left, NodeBase& right);
+    NodeOperatorMinus(NodeBase *left, NodeBase *right);
     virtual double eval();
 };
 
 class NodeOperatorTimes : public NodeOperator
 {
 public:
-    NodeOperatorTimes(NodeBase& left, NodeBase& right);
+    NodeOperatorTimes(NodeBase *left, NodeBase *right);
     virtual double eval();
 };
 
 class NodeOperatorDivide : public NodeOperator
 {
 public:
-    NodeOperatorDivide(NodeBase& left, NodeBase& right);
+    NodeOperatorDivide(NodeBase *left, NodeBase *right);
     virtual double eval();
 };
 
