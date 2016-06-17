@@ -60,9 +60,11 @@ void test_Parser()
 
     assert(parser->parse("") == NULL);
 
-    assert(parser->parse("55") == 55);
+    NodeBase* exp5 = parser->parse("55");
+    assert(exp5->eval() == 55);
 
-    assert(parser->parse("(55)") == 55);
+    NodeBase* exp6 = parser->parse("(55)");
+    assert(exp6->eval() == 55);
 
     assert(parser->parse("( )") == NULL);
 
