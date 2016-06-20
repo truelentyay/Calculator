@@ -60,33 +60,44 @@ void test_nodes()
 void test_Parser()
 {
     Parser parser;
-    std::string str = "(+ 1 1)";
-    NodeBase* exp1 = parser.parse(str);
-    iAssert(exp1->eval() == 2, "Test 1");
+    std::string str = "(+ 1 (+ 0 1))";
+    Input *input2 = new Input(str);
+    size_t pos1 = parser.findOperation(input2);
+    iAssert(pos1 == '-', "Test findOperation");
+    iAssert(input2->getPos() == 3, "Test getPos findOperation");
+    std::cout << input2->getPos() << std::endl;
 
-    str = "(- 1 (+ 1 1))";
-    NodeBase* exp2 = parser.parse(str);
-    iAssert(exp2->eval() == -1, "Test 2");
+    parser.findLeftOperand(input2);
+    iAssert(input2->getPos() == 5, "Test getPos findLeftOperand");
 
-    size_t pos1 = parser.fnd_operator(str);
-    iAssert(pos1 == 1, "Test fnd_operator");
+//    parser.findRightOperand(input2);
+//    iAssert(input2->getPos() == 11, "Test getPos findRightOperand");
 
-    size_t pos2 = parser.fnd_arg_end(5, str);
-    iAssert(pos2 == 11, "Test fnd_arg_end");
+    NodeBase* exp2_1 = parser.binary_operation(parser.findOperation(input2), parser.findLeftOperand(input2), parser.findRightOperand(input2));
+    iAssert(exp2_1->eval() == 2, "Test 2_1");
+    std::cout << exp2_1->eval() << std::endl;
 
-    size_t pos3 = parser.fnd_next_space(3, str);
-    iAssert(pos3 == 4, "Test fnd_nxt_space");
-
-    str = "(* (- 1 (+ 1 1)) (+ 1 1))";
-    NodeBase* exp3 = parser.parse(str);
-    iAssert(exp3->eval() == -2, "Test 3");
-
-    str = "(/ 15 15)";
-    NodeBase* exp4 = parser.parse(str);
-    iAssert(exp4->eval() == 1, "Test 4");
+    NodeBase* exp2 = parser.parse(input2);
+    iAssert(exp2->eval() == 2, "Test 2");
 
     str = "(+ 1 1)";
-    iAssert(parser.parse("") == NULL, "Test 5");
+    Input *input1 = new Input(str);
+    NodeBase* exp1 = parser.parse(input1);
+    iAssert(exp1->eval() == 2, "Test 1");
+
+    str = str = "(* (- 1 (+ 1 1)) (+ 1 1))";
+    Input *input3 = new Input(str);
+    NodeBase* exp3 = parser.parse(input3);
+    iAssert(exp3->eval() == -2, "Test 3");
+    std::cout << exp3->eval() << std::endl;
+
+    str = "(/ 15 15)";
+    Input *input4 = new Input(str);
+    NodeBase* exp4 = parser.parse(input4);
+    iAssert(exp4->eval() == 1, "Test 4");
+
+    Input *input5 = new Input("");
+    iAssert(parser.parse(input5) == NULL, "Test 5");
 
 //    str = "55";
 //    NodeBase* exp5 = parser.parse(str);
@@ -97,17 +108,31 @@ void test_Parser()
 //    iAssert(exp6->eval() == 55, "Test 7");
 
     str = "( )";
-    iAssert(parser.parse(str) == NULL, "Test 8");
+    Input *input8 = new Input(str);
+    iAssert(parser.parse(input8) == NULL, "Test 8");
 
     str = "(+)";
-    iAssert(parser.parse(str) == NULL, "Test 9");
+    Input *input9 = new Input(str);
+    iAssert(parser.parse(input9) == NULL, "Test 9");
 
     str = "abc";
-    iAssert(parser.parse(str) == NULL, "Test 10");
+    Input *input10 = new Input(str);
+    iAssert(parser.parse(input10) == NULL, "Test 10");
 
     str = "(- (+ (* 3 5) (/ 4 2)) 1)";
-    NodeBase *expression = parser.parse(str);  //3*5+4/2-1");
+    Input *input11 = new Input(str);
+    NodeBase *expression = parser.parse(input11);  //3*5+4/2-1");
     iAssert(expression->eval() == 16, "Test 11");
+
+    delete input1;
+    delete input2;
+    delete input3;
+    delete input4;
+    delete input5;
+    delete input8;
+    delete input9;
+    delete input10;
+    delete input11;
 
 }
 
@@ -131,7 +156,7 @@ int main(){
         Process process;
         return process.run();
     }
-    catch (std::exception e)
+    catch (std::exception &e)
     {
         std::cerr << e.what() << std::endl;
     }
