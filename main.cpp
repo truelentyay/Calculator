@@ -60,25 +60,18 @@ void test_nodes()
 void test_Parser()
 {
     Parser parser;
-    std::string str = "(+ 1 (+ 0 1))";
+    std::string str = "(+ 5 (+ 10 1))";
     Input *input2 = new Input(str);
     size_t pos1 = parser.findOperation(input2);
-    iAssert(pos1 == '-', "Test findOperation");
+    iAssert(pos1 == '+', "Test findOperation");
     iAssert(input2->getPos() == 3, "Test getPos findOperation");
-    std::cout << input2->getPos() << std::endl;
+
 
     parser.findLeftOperand(input2);
     iAssert(input2->getPos() == 5, "Test getPos findLeftOperand");
 
-//    parser.findRightOperand(input2);
-//    iAssert(input2->getPos() == 11, "Test getPos findRightOperand");
-
-    NodeBase* exp2_1 = parser.binary_operation(parser.findOperation(input2), parser.findLeftOperand(input2), parser.findRightOperand(input2));
-    iAssert(exp2_1->eval() == 2, "Test 2_1");
-    std::cout << exp2_1->eval() << std::endl;
-
     NodeBase* exp2 = parser.parse(input2);
-    iAssert(exp2->eval() == 2, "Test 2");
+    iAssert(exp2->eval() == 16, "Test 2");
 
     str = "(+ 1 1)";
     Input *input1 = new Input(str);
@@ -89,7 +82,6 @@ void test_Parser()
     Input *input3 = new Input(str);
     NodeBase* exp3 = parser.parse(input3);
     iAssert(exp3->eval() == -2, "Test 3");
-    std::cout << exp3->eval() << std::endl;
 
     str = "(/ 15 15)";
     Input *input4 = new Input(str);

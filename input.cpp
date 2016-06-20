@@ -18,10 +18,11 @@ char Input::takeOperationFromPos()
        }
        else
        {
-          m_pos = 3;
+          m_pos = 1;
           return m_str[1];
        }
 }
+
 std::string Input::takeExpressionFromPos()
 {
    if (m_pos >= m_str.length())
@@ -72,6 +73,7 @@ std::string Input::takeExpressionFromPos()
    }
    return input;
 }
+
 void Input::setPos(size_t pos)
 {
    m_pos = pos;
