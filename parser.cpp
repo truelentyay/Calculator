@@ -6,7 +6,7 @@
 
 
 
-NodeBase* Parser::parse(Input *input)
+NodeBase* Parser::parse(Input &input)
 {
     /*
     * if (str.empty())
@@ -43,7 +43,7 @@ NodeBase* Parser::parse(Input *input)
     *
     */
 
-    if (input->getStr() == "")
+    if (input.getStr().empty())
     {
        //throw std::runtime_error("String is emty!");
        return NULL;
@@ -59,83 +59,82 @@ NodeBase* Parser::parse(Input *input)
     {
         return NULL;
     }
-    return m_node = binary_operation(operation, left, right);
+   // NodeBase *res_node = binary_operation(operation, left, right);
+//    delete left;
+//    left = NULL;
+//    delete right;
+//    right = NULL;
+    return binary_operation(operation, left, right);
 }
 
-char Parser::findOperation(Input *input)
+char Parser::findOperation(Input &input)
 {
-    input->setPos(0);
-    char Operation = input->takeOperationFromPos();
-    input->setPos(input->getPos()+2);
+    input.setPos(0);
+    char Operation = input.takeOperationFromPos();
+    input.setPos(input.getPos()+2);
     return Operation;
 }
 
-NodeBase *Parser::findLeftOperand(Input *input)
+NodeBase *Parser::findLeftOperand(Input &input)
 {
-    Input *leftOperand = new Input(input->takeExpressionFromPos());
+    Input leftOperand(input.takeExpressionFromPos());// = new Input(input->takeExpressionFromPos());
     NodeBase *node;
-    switch (input->getFormat())
+    switch (input.getFormat())
     {
     case 'E':
         node = parse(leftOperand);
-        input->setPos(input->getPos()+2);
+        input.setPos(input.getPos()+2);
         break;
     case 'N':
-        node = new Node(atof(leftOperand->getStr().c_str()));
-        input->setPos(input->getPos()+1);
+        node = new Node(atof(leftOperand.getStr().c_str()));
+        input.setPos(input.getPos()+1);
         break;
     default:
         node = NULL;
         break;
     }
-    delete leftOperand;
     return node;
 }
 
-NodeBase *Parser::findRightOperand(Input *input)
+NodeBase *Parser::findRightOperand(Input &input)
 {
-    Input *rightOperand = new Input(input->takeExpressionFromPos());
+    Input rightOperand(input.takeExpressionFromPos());// = new Input(input.takeExpressionFromPos());
     NodeBase *node;
-    switch (input->getFormat())
+    switch (input.getFormat())
     {
     case 'E':
         node = parse(rightOperand);
-        input->setPos(input->getPos());
+        input.setPos(input.getPos());
         break;
     case 'N':
-        node = new Node(atof(rightOperand->getStr().c_str()));
-        input->setPos(input->getPos());
+        node = new Node(atof(rightOperand.getStr().c_str()));
+        input.setPos(input.getPos());
         break;
     default:
         node = NULL;
         break;
     }
-    delete rightOperand;
     return node;
 }
 
 NodeBase* Parser::binary_operation(char op, NodeBase* left, NodeBase* right)
 {
-    m_node = NULL;
+    NodeBase *node = NULL;
     switch (op)
     {
     case '+':
-        m_node = new NodeOperatorPlus(left, right);
+        node = new NodeOperatorPlus(left, right);
         break;
     case '-':
-        m_node = new NodeOperatorMinus(left, right);
+        node = new NodeOperatorMinus(left, right);
         break;
     case '*':
-        m_node = new NodeOperatorTimes(left, right);
+        node = new NodeOperatorTimes(left, right);
         break;
     case '/':
-        m_node = new NodeOperatorDivide(left, right);
+        node = new NodeOperatorDivide(left, right);
         break;
     }
-    return m_node;
+    return node;
 }
 
-Parser::~Parser()
-{
-    delete m_node;
-}
