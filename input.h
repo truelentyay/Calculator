@@ -11,7 +11,6 @@ public:
     void setPos(size_t pos);
     size_t getPos();
     std::string getStr();
-    void setStr(std::string str);
     char getFormat();
 
 private:

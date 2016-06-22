@@ -4,48 +4,15 @@
 #include <cstdlib>
 #include <iostream>
 
+const char EXPRESSION = 'E';
+const char NUMBER = 'N';
+const size_t toCharAfterSpace = 1;
 
 
 NodeBase* Parser::parse(Input &input)
 {
-    /*
-    * if (str.empty())
-    * {
-    *   say error
-    * }
-    *
-    * Operation opertation = getOperation( str );
-    * if ( !operation.isValid() )
-    * {
-    *   say invalid operation
-    * }
-    *
-    *
-    * NodeBase* left = getLeftOperand(str);
-    * NodeBase* right = getRightOperand(str);
-    *
-    * if (!left.isValid() || !right.isValid())
-    * {
-    *  say error
-    * }
-    *
-    * return makeNode( operation, left, right );
-    *
-    *
-    *
-    * NodeBase* Parser::getLeftOperand(const std::string& str )
-    * {
-    *   std::string exp = findExp( str );
-    *   NodeBase* doub = findDouble( str );
-    *   if (  )
-    *
-    * }
-    *
-    */
-
     if (input.getStr().empty())
     {
-       //throw std::runtime_error("String is emty!");
        return NULL;
     }
     char operation = findOperation(input);
@@ -59,11 +26,6 @@ NodeBase* Parser::parse(Input &input)
     {
         return NULL;
     }
-   // NodeBase *res_node = binary_operation(operation, left, right);
-//    delete left;
-//    left = NULL;
-//    delete right;
-//    right = NULL;
     return binary_operation(operation, left, right);
 }
 
@@ -77,17 +39,17 @@ char Parser::findOperation(Input &input)
 
 NodeBase *Parser::findLeftOperand(Input &input)
 {
-    Input leftOperand(input.takeExpressionFromPos());// = new Input(input->takeExpressionFromPos());
+    Input leftOperand(input.takeExpressionFromPos());
     NodeBase *node;
     switch (input.getFormat())
     {
-    case 'E':
+    case EXPRESSION:
         node = parse(leftOperand);
-        input.setPos(input.getPos()+2);
+        input.setPos(input.getPos()+toCharAfterSpace);
         break;
-    case 'N':
+    case NUMBER:
         node = new Node(atof(leftOperand.getStr().c_str()));
-        input.setPos(input.getPos()+1);
+        input.setPos(input.getPos()+toCharAfterSpace);
         break;
     default:
         node = NULL;
@@ -98,15 +60,15 @@ NodeBase *Parser::findLeftOperand(Input &input)
 
 NodeBase *Parser::findRightOperand(Input &input)
 {
-    Input rightOperand(input.takeExpressionFromPos());// = new Input(input.takeExpressionFromPos());
+    Input rightOperand(input.takeExpressionFromPos());
     NodeBase *node;
     switch (input.getFormat())
     {
-    case 'E':
+    case EXPRESSION:
         node = parse(rightOperand);
         input.setPos(input.getPos());
         break;
-    case 'N':
+    case NUMBER:
         node = new Node(atof(rightOperand.getStr().c_str()));
         input.setPos(input.getPos());
         break;

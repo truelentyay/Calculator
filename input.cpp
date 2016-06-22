@@ -1,6 +1,10 @@
 #include "input.h"
-#include <vector>
-#include <stdexcept>\
+#include <stdexcept>
+#include <cctype>
+
+const char EXPRESSION = 'E';
+const char NUMBER = 'N';
+const size_t posOfOperation = 1;
 
 Input::Input(std::string str)
 {
@@ -18,8 +22,8 @@ char Input::takeOperationFromPos()
        }
        else
        {
-          m_pos = 1;
-          return m_str[1];
+          m_pos = posOfOperation;
+          return m_str[posOfOperation];
        }
 }
 
@@ -35,32 +39,33 @@ std::string Input::takeExpressionFromPos()
    int f = 0;
    if (m_str[m_pos] == '(')
    {
-      m_format = 'E';
-      for (i = m_pos; i < m_str.length(); i++)
+      m_format = EXPRESSION;
+      for (i = m_pos; i < m_str.length(); ++i)
       {
          if (m_str[i]=='(')
          {
-            f++;
+            ++f;
          }
          else if (m_str[i]==')')
          {
-            f--;
+            --f;
          }
          if (f == 0)
          {
-            break;
+             ++i;
+             break;
          }
       }
-      input = m_str.substr(m_pos, i - m_pos +1);
+      input = m_str.substr(m_pos, i - m_pos);
       m_pos = i;
    }
-   else if ('0' <= m_str[m_pos] <= '9')
+   else if (std::isdigit(m_str[m_pos]))
    {
-      m_format = 'N';
+      m_format = NUMBER;
       i = m_pos;
       while (m_str[i] != ' ' && i < m_str.length())
       {
-          i++;
+          ++i;
       }
       input = m_str.substr(m_pos, i - m_pos);
       m_pos = i;
@@ -89,10 +94,6 @@ std::string Input::getStr()
     return m_str;
 }
 
-void Input::setStr(std::string str)
-{
-    m_str = str;
-}
 
 char Input::getFormat()
 {

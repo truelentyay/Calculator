@@ -1,13 +1,17 @@
 #ifndef NODES_H
 #define NODES_H
-
+#include "my_smartptr.h"
 
 class NodeBase
 {
 public:
+    NodeBase();
+
     virtual double eval() = 0;
-    virtual NodeBase* clone() const = 0;
+    virtual NodeBase* clone()  = 0;
     virtual ~NodeBase();
+private:
+    NodeBase( NodeBase&);
 };
 
 class Node : public NodeBase
@@ -15,8 +19,7 @@ class Node : public NodeBase
 public:
     Node(double v);
     virtual double eval();
-    virtual NodeBase* clone() const;
-    virtual ~Node();
+    virtual NodeBase* clone() ;
 private:
     double m_value;
 };
@@ -26,50 +29,44 @@ private:
 class NodeOperator : public NodeBase
 {
 public:
-    NodeOperator(NodeBase *left, NodeBase *right);
-    NodeOperator(const NodeOperator& other);
+    NodeOperator(NodeBase* left, NodeBase* right);
     virtual double eval() = 0;
-    virtual NodeBase* clone() const = 0;
-    virtual ~NodeOperator();
+    virtual NodeBase* clone()  = 0;
 protected:
-    NodeBase *m_left;
-    NodeBase *m_right;
+    SmartPtr<NodeBase> m_left;
+    SmartPtr<NodeBase> m_right;
 };
 
 class NodeOperatorPlus : public NodeOperator
 {
 public:
-    NodeOperatorPlus(NodeBase *left, NodeBase *right);
+    NodeOperatorPlus(NodeBase* left, NodeBase* right);
     virtual double eval();
-    virtual NodeBase* clone() const;
-    virtual ~NodeOperatorPlus();
+    virtual NodeBase* clone() ;
 };
 
 class NodeOperatorMinus : public NodeOperator
 {
 public:
-    NodeOperatorMinus(NodeBase *left, NodeBase *right);
+    NodeOperatorMinus(NodeBase * left, NodeBase * right);
     virtual double eval();
-    virtual NodeBase* clone() const;
-    virtual ~NodeOperatorMinus();
+    virtual NodeBase * clone() ;
 };
 
 class NodeOperatorTimes : public NodeOperator
 {
 public:
-    NodeOperatorTimes(NodeBase *left, NodeBase *right);
+    NodeOperatorTimes(NodeBase * left, NodeBase * right);
     virtual double eval();
-    virtual NodeBase* clone() const;
-    virtual ~NodeOperatorTimes();
+    virtual NodeBase * clone() ;
 };
 
 class NodeOperatorDivide : public NodeOperator
 {
 public:
-    NodeOperatorDivide(NodeBase *left, NodeBase *right);
+    NodeOperatorDivide(NodeBase * left, NodeBase * right);
     virtual double eval();
-    virtual NodeBase* clone() const;
-    virtual ~NodeOperatorDivide();
+    virtual NodeBase * clone() ;
 };
 
 #endif // NODES_H
