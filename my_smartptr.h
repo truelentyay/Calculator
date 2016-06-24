@@ -1,7 +1,7 @@
 #ifndef MY_SMARTPTR_H
 #define MY_SMARTPTR_H
 #include <cstddef>
-
+#include <iostream>
 
 template <class T>
 class SmartPtr
@@ -14,8 +14,11 @@ public:
     }
     ~SmartPtr()
     {
-       delete m_ptr;
-       m_ptr = NULL;
+       if (NULL != m_ptr)
+       {
+          delete m_ptr;
+          m_ptr = NULL;
+       }
     }
 
     T* operator->()
@@ -23,9 +26,9 @@ public:
        return m_ptr;
     }
 
-    bool operator==(T* other)
+    bool operator==(SmartPtr<T> other)
     {
-       return m_ptr == other;
+       return this->m_ptr == other.m_ptr;
     }
     bool isValid()
     {
@@ -41,6 +44,7 @@ private:
     SmartPtr operator=(const SmartPtr&);
 
     T *m_ptr;
+    int counter;
 };
 
 #endif // MY_SMARTPTR_H

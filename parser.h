@@ -8,10 +8,10 @@ class Parser
 {
 public:
     NodeBase *parse(Input &input);
-    char findOperation(Input &input);
+//    token_Value findOperation(Input &input);
     NodeBase *findLeftOperand(Input &input);
     NodeBase *findRightOperand(Input &input);
-    NodeBase* binary_operation(char op, NodeBase* left, NodeBase* right);
+    NodeBase* binary_operation(token_Value op, NodeBase* left, NodeBase* right);
 };
 
 #endif // PARSER_H

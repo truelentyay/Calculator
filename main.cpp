@@ -55,13 +55,14 @@ void test_Parser()
     Parser parser;
     std::string str = "(+ 5 (+ 10 1))";
     Input input2(str); //= new Input(str);
-    size_t pos1 = parser.findOperation(input2);
-    iAssert(pos1 == '+', "Test findOperation");
-    iAssert(input2.getPos() == 3, "Test getPos findOperation");
+    VI pos1 = input2.begin();//parser.findOperation(input2);
+    token_Value op = input2.find_operation_from(pos1);
+    iAssert(op == '+', "Test findOperation");
+   // iAssert(input2.getPos() == 3, "Test getPos findOperation");
 
 
-    parser.findLeftOperand(input2);
-    iAssert(input2.getPos() == 5, "Test getPos findLeftOperand");
+ //   parser.findLeftOperand(input2);
+   // iAssert(input2.getPos() == 5, "Test getPos findLeftOperand");
 
     SmartPtr<NodeBase> exp2(parser.parse(input2));
     iAssert(exp2->eval() == 16, "Test 2");

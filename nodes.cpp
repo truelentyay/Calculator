@@ -80,11 +80,6 @@ NodeBase * NodeOperatorDivide::clone()
     return new NodeOperatorDivide(m_left->clone(), m_right->clone());
 }
 
-
-
-
-
-
 NodeBase::NodeBase()
 {
 }
