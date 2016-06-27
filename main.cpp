@@ -55,9 +55,10 @@ void test_Parser()
     Parser parser;
     std::string str = "(+ 5 (+ 10 1))";
     Input input2(str); //= new Input(str);
-    VI pos1 = input2.begin();//parser.findOperation(input2);
-    token_Value op = input2.find_operation_from(pos1);
-    iAssert(op == '+', "Test findOperation");
+    input2.splitIntoTokens();
+    //parser.findOperation(input2);
+    Token op = input2.find_operation();
+    iAssert(op.getType() == '+', "Test findOperation");
    // iAssert(input2.getPos() == 3, "Test getPos findOperation");
 
 

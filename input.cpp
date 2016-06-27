@@ -1,126 +1,139 @@
 #include "input.h"
 
-typedef std::map<int, std::string>::const_iterator CI;
-typedef std::string::const_iterator SI;
+
+//typedef std::map<int, std::string>::const_iterator MI;
+//typedef std::string::const_iterator SI;
 //typedef std::vector<token_Value>::const_iterator VI;
 
 Input::Input()
-    : isValid(true)
+    : m_Valid(true)
+    , m_pos(0)
 {
-    m_expression.m_tokens.reserve(100);
+    //m_tokens.reserve(100);
 }
 
-Input::Input(Expression exp)
-    : m_expression(exp)
-    , isValid(true)
+Input::Input(std::vector<Token> tokens)
+    : m_tokens(tokens)
+    , m_Valid(true)
+    , m_pos(0)
 {
-    m_expression.m_tokens.reserve(100);
+    //m_tokens.reserve(100);
 }
 
 Input::Input(std::string str)
     : m_str(str)
+    , m_pos(0)
 {
-    m_expression.m_tokens.reserve(100);
+   // m_tokens.reserve(100);
 }
 
-token_Value Input::find_operation_from(VI pos)
+Token Input::find_operation()
 {
-    if (this->containsAnyOf("+-*/"))
+    token_Value t[4] = {plus, minus, times, divide};
+    std::vector<token_Value> opers(t, t+4);
+    ++m_pos;
+    if (this->containsAnyOf(opers))
+    {
+        return m_tokens[m_pos];
+    }
+    else
     {
         std::cerr << "There is no operations!" << std::endl;
-        return null_tok;
-    }
-    else
-    {
-        pos = m_expression.m_tokens.begin()+1;
-        return *(m_expression.m_tokens.begin()+1);
+        m_Valid = false;
     }
 }
 
-Expression Input::find_expression_from(VI pos)
+Token Input::find_number()
 {
-    std::vector<token_Value>& curr_tok = m_expression.m_tokens;
-    isValid = true;
-    Expression exp;
-    if (pos >= curr_tok.end())
+    ++m_pos;
+    if (m_pos <= m_tokens.size())
+    {
+        return m_tokens[m_pos];
+    }
+    else
     {
         std::cerr << "Position is out of range!" << std::endl;
-        isValid = false;
+        m_Valid = false;
     }
+}
+
+std::vector<Token> Input::find_expression()
+{
+    m_Valid = true;
+    ++m_pos;
+    std::vector<Token> tokens;
+    //    if (m_pos >= curr_tok.end())
+    //    {
+    //        std::cerr << "Position is out of range!" << std::endl;
+    //        m_Valid = false;
+    //    }
     int f = 0;
-    if (LP == *pos)
+    for (m_pos; m_pos < m_tokens.size(); ++m_pos)
     {
-        for (VI i = pos; i < curr_tok.end(); ++i)
-        {
-            switch (*i/*curr_tok[i]*/) {
-            case LP:
-                exp.m_tokens.push_back(*i/*curr_tok[i]*/);
-                ++f;
-                break;
-            case RP:
-                exp.m_tokens.push_back(*i/*curr_tok[i]*/);
-                --f;
-                break;
-            case number:
-                exp.m_tokens.push_back(*i/*curr_tok[i]*/);
-                CI curr_number = m_expression.m_numbers.find(*i/*curr_tok[i]*/);
-                exp.m_numbers.insert(exp.m_tokens.end()-1, curr_number->second );
-            default:
-                exp.m_tokens.push_back(*i/*curr_tok[i]*/);
-                break;
-            }
-            if (0 == f)
-            {
-                break;
-            }
+        Token curr_token = m_tokens[m_pos];
+        switch (curr_token.getType()) {
+        case LP:
+            tokens.push_back(curr_token);
+            ++f;
+            break;
+        case RP:
+            tokens.push_back(curr_token);
+            --f;
+            break;
+        default:
+            tokens.push_back(curr_token);
+            break;
         }
-        pos = i+1;
+        if (0 == f)
+        {
+            break;
+        }
     }
-    else if (number == *pos/*curr_tok[pos]*/)
+    return tokens;
+}
+
+void Input::setPos(size_t pos)
+{
+    if (m_pos >= m_tokens.size())
     {
-        exp.m_tokens.push_back(*pos/*curr_tok[pos]*/);
-        CI curr_number = m_expression.m_numbers.find(*pos/*curr_tok[pos]*/);
-        exp.m_numbers.insert(exp.m_tokens.end()-1, curr_number->second );
-        ++pos;
+        std::cerr << "Position is out of range!" << std::endl;
     }
     else
     {
-        std::cerr << "Wrong input!" << std::endl;
-        isValid = false;
+        m_pos = pos;
     }
-    return exp;
 }
 
-//void Input::setPos(size_t pos)
-//{
-//   m_pos = pos;
-//}
-
-//size_t Input::getPos()
-//{
-//   return m_pos;
-//}
+size_t Input::getPos()
+{
+   return m_pos;
+}
 
 std::string Input::getStr()
 {
     return m_str;
 }
 
-token_Value Input::getTokenFrom(VI pos)
+Token Input::nextToken()
 {
-    return *pos/*m_expression.m_tokens[pos]*/;
+    return m_tokens[m_pos+1];
 }
 
-std::string Input::getNumberFrom(VI pos)
-{
-    CI curr_number = m_expression.m_numbers.find(*pos/*m_expression.m_tokens[pos]*/);
-    return curr_number->second;
-}
+//token_Value Input::getTokenFrom(size_t pos)
+//{
+//    return *pos/*m_expression.m_tokens[pos]*/;
+//}
 
-VI Input::begin()
-{
-    return m_expression.m_tokens.begin();
-}
+//std::string Input::getNumberFrom(size_t pos)
+//{
+//    //MI curr_number = m_expression.m_numbers.find(*pos/*m_expression.m_tokens[pos]*/);
+//    return m_expression.m_numbers.find(pos)->second;
+//}
+
+//VI Input::begin()
+//{
+//    return m_expression.m_tokens.begin();
+//}
 
 
 //char Input::getFormat()
@@ -130,19 +143,18 @@ VI Input::begin()
 
 void Input::splitIntoTokens()
 {
-    isValid = true;
-    std::vector<token_Value>& curr_tok = m_expression.m_tokens;
-    std::string numStr = "";
-    for (std::string::const_iterator i = m_str.begin(); i != m_str.end(); ++i)
+    m_Valid = true;
+    std::string strNum = "";
+    for (size_t i = 0; i < m_str.size(); ++i)
     {
-        char ch = *i/*m_str[i]*/;
+        char ch = m_str[i];
         switch (ch) {
         case ' ':
-            if (!numStr.empty())
+            if (!strNum.empty())
             {
-                curr_tok.push_back(number);
-                m_expression.m_numbers[numStr] = curr_tok.end()-1;
-                numStr = "";
+                Token token(number, strNum);
+                strNum = "";
+                m_tokens.push_back(token);
             }
             break;
         case '+':
@@ -151,37 +163,56 @@ void Input::splitIntoTokens()
         case '/':
         case '(':
         case ')':
-            if (!numStr.empty())
+            if (!strNum.empty())
             {
-                curr_tok.push_back(number);
-                m_expression.m_numbers[numStr] = curr_tok.end()-1;
-                numStr = "";
+                Token token(number, strNum);
+                strNum = "";
+                m_tokens.push_back(token);
+                break;
             }
-            curr_tok.push_back(token_Value(ch));
+            else
+            {
+                Token token(token_Value(ch), ch);
+                m_tokens.push_back(token);
+                break;
+            }
         case '1': case '2': case '3': case '4': case '5':
         case '6': case '7': case '8': case '9': case '0':
         case '.':
-            numStr.push_back(ch);
+            strNum.push_back(ch);
+            break;
         default:
             std::cerr << "Wrong token!" << std::endl;
-            isValid = false;
+            m_Valid = false;
             break;
         }
 
     }
 }
 
-bool Input::containsAnyOf(std::string str)
+bool Input::isValid()
 {
-    std::vector<token_Value>& curr_tok = m_expression.m_tokens;
+    return m_Valid;
+}
+
+bool Input::containsAnyOf(std::vector<token_Value> tok)
+{
     int count = 0;
-    for (SI i = str.begin(); i != str.end(); ++i)
+    for (size_t i = 0; i < tok.size(); ++i)
     {
-        VI it = std::find(curr_tok.begin(), curr_tok.end(), *i/*str[i]*/);
-        if (it != curr_tok.end())
+        for (size_t j = 0; j < m_tokens.size(); j++)
         {
-            ++count;
+            Token curr_token = m_tokens[j];
+            if (tok[i] == curr_token.getType())
+            {
+                ++count;
+            }
         }
+//        //VI it = std::find(m_tokens.begin(), m_tokens.end(), tok[i]);
+//        if (m_tokens.end() != std::find(m_tokens.begin(), m_tokens.end(), tok[i]))
+//        {
+//            ++count;
+//        }
     }
     if (count == 0)
     {

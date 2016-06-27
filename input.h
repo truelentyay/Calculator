@@ -1,11 +1,13 @@
 #ifndef INPUT_H
 #define INPUT_H
 #include <cctype>
-#include <string>
-#include "expression.h"
 #include <iostream>
-#include <map>
 #include <cstdlib>
+#include <vector>
+#include <algorithm>
+#include <iterator>
+#include "token.h"
+
 
 //enum token_Value { number, LP = '(', RP = ')', plus = '+', minus = '-', time = '*', diviation = '/' };
 
@@ -15,26 +17,27 @@ class Input
 {
 public:
     Input();
-    Input(Expression exp);
+    Input(std::vector<Token> tokens);
     Input(std::string str);
-    Expression find_expression_from(VI pos);
-    token_Value find_operation_from(VI pos);
-//    void setPos(size_t pos);
-//    size_t getPos();
+    std::vector<Token> find_expression();
+    Token find_operation();
+    Token find_number();
+    void setPos(size_t m_pos);
+    size_t getPos();
     std::string getStr();
-    token_Value getTokenFrom(VI pos);
-    std::string getNumberFrom(VI pos);
-    VI begin();
-//    char getFormat();
+    Token nextToken();
+    //token_Value getTokenFrom(size_t pos);
+   // std::string getNumberFrom(size_t pos);
+   // VI begin();
     void splitIntoTokens();
-    bool containsAnyOf(std::string str);
+    bool isValid();
+    bool containsAnyOf(std::vector<token_Value>);
 
 private:
     std::string m_str;
-    Expression m_expression;
-//    size_t m_pos;
-//    char m_format;
-    bool isValid;
+    std::vector<Token> m_tokens;
+    size_t m_pos;
+    bool m_Valid;
 };
 
 #endif // INPUT_H

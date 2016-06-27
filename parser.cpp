@@ -6,8 +6,7 @@
 
 //const char EXPRESSION = 'E';
 //const char NUMBER = 'N';
-const size_t toCharAfterSpace = 1;
-VI position;
+//const size_t toCharAfterSpace = 1;
 
 NodeBase* Parser::parse(Input &input)
 {
@@ -16,9 +15,8 @@ NodeBase* Parser::parse(Input &input)
        return NULL;
     }
     input.splitIntoTokens();
-    position = input.begin();
-    token_Value operation = input.find_operation_from(position);
-    if (operation == null_tok)
+    Token operation = input.find_operation();
+    if (!input.isValid())
     {
         return NULL;
     }
@@ -28,7 +26,7 @@ NodeBase* Parser::parse(Input &input)
     {
         return NULL;
     }
-    return binary_operation(operation, left, right);
+    return binary_operation(operation.getType(), left, right);
 }
 
 //token_Value Parser::findOperation(Input &input)
@@ -40,19 +38,32 @@ NodeBase* Parser::parse(Input &input)
 //}
 
 NodeBase *Parser::findLeftOperand(Input &input)
-{
-    Input leftOperand(input.find_expression_from(position));
+{  
     NodeBase *node;
-    switch (leftOperand.getTokenFrom(0))
+    Token next_token = input.nextToken();
+    switch (next_token.getType())
     {
     case LP:
+    {
+        Input leftOperand(input.find_expression());
+        if (!input.isValid())
+        {
+            node = NULL;
+            break;
+        }
         node = parse(leftOperand);
-        //input.setPos(input.getPos()+toCharAfterSpace);
         break;
+    }
     case number:
-        node = new Node(atof(leftOperand.getNumberFrom(0).c_str()));
-        //input.setPos(input.getPos()+toCharAfterSpace);
+    {
+        if (!input.isValid())
+        {
+            node = NULL;
+            break;
+        }
+        node = new Node(atof(input.find_number().getValue().c_str()));
         break;
+    }
     default:
         node = NULL;
         break;
@@ -61,19 +72,30 @@ NodeBase *Parser::findLeftOperand(Input &input)
 }
 
 NodeBase *Parser::findRightOperand(Input &input)
-{
-    Input rightOperand(input.find_expression_from(position));
+{ 
     NodeBase *node;
-    switch (input.getTokenFrom(0))
+    Token next_token = input.nextToken();
+    switch (next_token.getType())
     {
     case LP:
+    {
+        Input rightOperand(input.find_expression());
+        if (!input.isValid())
+        {
+            return NULL;
+        }
         node = parse(rightOperand);
-        //input.setPos(input.getPos());
         break;
+    }
     case number:
-        node = new Node(atof(rightOperand.getNumberFrom(0).c_str()));
-        //input.setPos(input.getPos());
+    {
+        if (!input.isValid())
+        {
+            return NULL;
+        }
+        node = new Node(atof(input.find_number().getValue().c_str()));
         break;
+    }
     default:
         node = NULL;
         break;
