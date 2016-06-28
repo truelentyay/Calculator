@@ -11,20 +11,23 @@ Token::Token(token_Value type, std::string value)
    m_value = value;
 }
 
-Token::Token(token_Value type, char value)
+
+template<class C>
+C Token::getValue()
 {
-   m_type = type;
-   m_value = value;
+    return m_value;
 }
 
-std::string Token::getValue()
+template<>
+std::string Token::getValue<std::string>()
 {
    return m_value;
 }
 
-char Token::getValue()
+template<>
+double Token::getValue<double>()
 {
-   return m_value;
+    return atof(m_value.c_str());
 }
 
 token_Value Token::getType()

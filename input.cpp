@@ -7,60 +7,77 @@
 
 Input::Input()
     : m_Valid(true)
-    , m_pos(0)
+//    , pos(0)
 {
-    //m_tokens.reserve(100);
+    m_tokens.reserve(100);
 }
 
 Input::Input(std::vector<Token> tokens)
     : m_tokens(tokens)
     , m_Valid(true)
-    , m_pos(0)
+//    , pos(0)
 {
-    //m_tokens.reserve(100);
+    m_tokens.reserve(100);
 }
 
 Input::Input(std::string str)
     : m_str(str)
-    , m_pos(0)
+//    , pos(0)
 {
    // m_tokens.reserve(100);
 }
 
-Token Input::find_operation()
+Token Input::find_operation(size_t pos)
 {
     token_Value t[4] = {plus, minus, times, divide};
     std::vector<token_Value> opers(t, t+4);
-    ++m_pos;
-    if (this->containsAnyOf(opers))
+    size_t p;
+    p = findFirstOfAny(opers, pos);
+    if (p != -1)
     {
-        return m_tokens[m_pos];
+       // ++pos;
+        return m_tokens[p];
     }
     else
     {
-        std::cerr << "There is no operations!" << std::endl;
-        m_Valid = false;
+//        std::cerr << "There is no operations!" << std::endl;
+//        m_Valid = false;
+        throw std::runtime_error("There is no operations!");
     }
 }
 
-Token Input::find_number()
-{
-    ++m_pos;
-    if (m_pos <= m_tokens.size())
+Token Input::find_number(size_t pos)
+{  
+    if (pos >= m_tokens.size())
     {
-        return m_tokens[m_pos];
+//        std::cerr << "Position is out of range!" << std::endl;
+//        m_Valid = false;
+        throw std::runtime_error("Position is out of range!");
     }
-    else
+    for (size_t i = pos; i < m_tokens.size(); ++i)
     {
-        std::cerr << "Position is out of range!" << std::endl;
-        m_Valid = false;
+        Token curr_token = m_tokens[i];
+        if (curr_token.getType() == number)
+        {
+            return curr_token;
+        }
     }
+//    if (pos <= m_tokens.size())
+//    {
+//        ++pos;
+//        return m_tokens[pos];
+//    }
+//    else
+//    {
+//        std::cerr << "Position is out of range!" << std::endl;
+//        m_Valid = false;
+//    }
 }
 
-std::vector<Token> Input::find_expression()
+std::vector<Token> Input::find_expression(size_t pos)
 {
     m_Valid = true;
-    ++m_pos;
+
     std::vector<Token> tokens;
     //    if (m_pos >= curr_tok.end())
     //    {
@@ -68,55 +85,71 @@ std::vector<Token> Input::find_expression()
     //        m_Valid = false;
     //    }
     int f = 0;
-    for (m_pos; m_pos < m_tokens.size(); ++m_pos)
+    bool expressionBegan = false;
+    for (size_t i = pos; i < m_tokens.size(); ++i)
     {
-        Token curr_token = m_tokens[m_pos];
+        Token curr_token = m_tokens[i];
         switch (curr_token.getType()) {
         case LP:
+            if (!expressionBegan)
+            {
+                expressionBegan = true;
+            }
             tokens.push_back(curr_token);
             ++f;
             break;
         case RP:
+            if (!expressionBegan)
+            {
+                break;
+            }
             tokens.push_back(curr_token);
             --f;
+            if (0 == f)
+            {
+               // ++pos;
+                return tokens;
+            }
             break;
         default:
+            if (!expressionBegan)
+            {
+                break;
+            }
             tokens.push_back(curr_token);
             break;
         }
-        if (0 == f)
-        {
-            break;
-        }
+
     }
-    return tokens;
+    throw std::runtime_error("Wrong expression!");
+    //return tokens;
 }
 
-void Input::setPos(size_t pos)
-{
-    if (m_pos >= m_tokens.size())
-    {
-        std::cerr << "Position is out of range!" << std::endl;
-    }
-    else
-    {
-        m_pos = pos;
-    }
-}
+//void Input::setPos(size_t pos)
+//{
+//    if (pos >= m_tokens.size())
+//    {
+//        std::cerr << "Position is out of range!" << std::endl;
+//    }
+//    else
+//    {
+//        pos = pos;
+//    }
+//}
 
-size_t Input::getPos()
-{
-   return m_pos;
-}
+//size_t Input::getPos()
+//{
+//   return pos;
+//}
 
 std::string Input::getStr()
 {
     return m_str;
 }
 
-Token Input::nextToken()
+Token Input::nextToken(size_t pos)
 {
-    return m_tokens[m_pos+1];
+    return m_tokens[pos+1];
 }
 
 //token_Value Input::getTokenFrom(size_t pos)
@@ -145,6 +178,7 @@ void Input::splitIntoTokens()
 {
     m_Valid = true;
     std::string strNum = "";
+    std::string str;
     for (size_t i = 0; i < m_str.size(); ++i)
     {
         char ch = m_str[i];
@@ -163,19 +197,25 @@ void Input::splitIntoTokens()
         case '/':
         case '(':
         case ')':
+        {
             if (!strNum.empty())
             {
-                Token token(number, strNum);
+                Token tokenNum(number, strNum);
                 strNum = "";
+                m_tokens.push_back(tokenNum);
+//                ss << ch;
+//                ss >> str;
+//                Token token(token_Value(ch), str);
+//                m_tokens.push_back(token);
+//                break;
+            }
+
+                str.push_back(ch);
+                Token token(token_Value(ch), str);
+                str = "";
                 m_tokens.push_back(token);
                 break;
-            }
-            else
-            {
-                Token token(token_Value(ch), ch);
-                m_tokens.push_back(token);
-                break;
-            }
+        }
         case '1': case '2': case '3': case '4': case '5':
         case '6': case '7': case '8': case '9': case '0':
         case '.':
@@ -195,16 +235,20 @@ bool Input::isValid()
     return m_Valid;
 }
 
-bool Input::containsAnyOf(std::vector<token_Value> tok)
+size_t Input::findFirstOfAny(std::vector<token_Value> tok, size_t pos)
 {
     int count = 0;
     for (size_t i = 0; i < tok.size(); ++i)
     {
-        for (size_t j = 0; j < m_tokens.size(); j++)
+        for (size_t j = pos; j < m_tokens.size(); j++)
         {
             Token curr_token = m_tokens[j];
             if (tok[i] == curr_token.getType())
             {
+                if (count == 0)
+                {
+                    return j;
+                }
                 ++count;
             }
         }
@@ -216,8 +260,7 @@ bool Input::containsAnyOf(std::vector<token_Value> tok)
     }
     if (count == 0)
     {
-        return false;
+        return -1;
     }
-    return true;
 }
 

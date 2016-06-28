@@ -7,15 +7,21 @@
 //const char EXPRESSION = 'E';
 //const char NUMBER = 'N';
 //const size_t toCharAfterSpace = 1;
+size_t position = 0;
 
 NodeBase* Parser::parse(Input &input)
 {
-    if (input.getStr().empty())
+    if (!input.isValid())
     {
-       return NULL;
+        return NULL;
     }
-    input.splitIntoTokens();
-    Token operation = input.find_operation();
+    if (!input.getStr().empty())
+    {
+       input.splitIntoTokens();
+    }
+
+    Token operation = input.find_operation(position);
+    ++position;
     if (!input.isValid())
     {
         return NULL;
@@ -40,17 +46,20 @@ NodeBase* Parser::parse(Input &input)
 NodeBase *Parser::findLeftOperand(Input &input)
 {  
     NodeBase *node;
-    Token next_token = input.nextToken();
+    Token next_token = input.nextToken(position);
+    ++position;
     switch (next_token.getType())
     {
     case LP:
     {
-        Input leftOperand(input.find_expression());
-        if (!input.isValid())
-        {
-            node = NULL;
-            break;
-        }
+        std::vector<Token> exp = input.find_expression(position);
+        Input leftOperand(exp);
+//        if (!input.isValid())
+//        {
+//            node = NULL;
+//            break;
+//        }
+        position = position + exp.size();
         node = parse(leftOperand);
         break;
     }
@@ -61,7 +70,8 @@ NodeBase *Parser::findLeftOperand(Input &input)
             node = NULL;
             break;
         }
-        node = new Node(atof(input.find_number().getValue().c_str()));
+        node = new Node(input.find_number(position).getValue<double>());
+        ++position;
         break;
     }
     default:
@@ -74,16 +84,18 @@ NodeBase *Parser::findLeftOperand(Input &input)
 NodeBase *Parser::findRightOperand(Input &input)
 { 
     NodeBase *node;
-    Token next_token = input.nextToken();
+    Token next_token = input.nextToken(position);
     switch (next_token.getType())
     {
     case LP:
     {
-        Input rightOperand(input.find_expression());
-        if (!input.isValid())
-        {
-            return NULL;
-        }
+        std::vector<Token> exp = input.find_expression(position);
+        Input rightOperand(exp);
+//        if (!input.isValid())
+//        {
+//            return NULL;
+//        }
+        position = position + exp.size();
         node = parse(rightOperand);
         break;
     }
@@ -93,7 +105,8 @@ NodeBase *Parser::findRightOperand(Input &input)
         {
             return NULL;
         }
-        node = new Node(atof(input.find_number().getValue().c_str()));
+        node = new Node(input.find_number(position).getValue<double>());
+        ++position;
         break;
     }
     default:

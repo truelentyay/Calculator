@@ -20,13 +20,15 @@ void iAssert(bool expression, const std::string& description)
     if (expression)
     {
         std::cout << "[V]";
+        std::cout << "  Congrats! " << description << " is good!" << std::endl;
     }
     else
     {
         std::cout << "[-]";
+        std::cout << "  Sorry! " << description << " is failed!" << std::endl;
     }
 
-    std::cout << " " << description << std::endl;
+   // std::cout << " " << description << std::endl;
 }
 
 void test_nodes()
@@ -50,6 +52,37 @@ void test_nodes()
     std::cout << "Done!" << std::endl;
 }
 
+void test_Input()
+{
+    std::string str = "(+ 5 (+ 10 1))";
+    token_Value t[9] = {LP, plus, number, LP, plus, number, number, RP, RP};
+    std::vector<token_Value> tokens(t, t+9);
+
+    Input input(str);
+    input.splitIntoTokens();
+    Token first = input.find_expression(0)[0];
+    Token sixth = input.find_expression(0)[6];
+    iAssert(tokens[0] == first.getType(), "Split[0]");
+    iAssert(tokens[6] == sixth.getType(), "Split[6]");
+
+    Token token = input.find_operation(0);
+    iAssert(token.getType() == plus, "Found operation");
+
+    token = input.nextToken(1);
+    iAssert(token.getValue<double>() == 5, "Next token");
+
+    std::vector<Token> right = input.find_expression(2);
+    token = right[2];
+    iAssert(token.getValue<double>() == 10, "Found number");
+
+    Input right_input(right);
+    iAssert(right_input.nextToken(3).getType() == RP, "Found expression[3]");
+    iAssert(right_input.nextToken(4).getType() == RP, "Found expression[4]");
+    std::cout << right_input.nextToken(4).getType() << std::endl;
+    iAssert(right_input.nextToken(0).getType() == plus, "Found expression[0]");
+    iAssert(right_input.findFirstOfAny(tokens, 1) == 1, "Found tokens");
+}
+
 void test_Parser()
 {
     Parser parser;
@@ -57,21 +90,38 @@ void test_Parser()
     Input input2(str); //= new Input(str);
     input2.splitIntoTokens();
     //parser.findOperation(input2);
-    Token op = input2.find_operation();
-    iAssert(op.getType() == '+', "Test findOperation");
+    size_t pos1 = 0;
+    Token op = input2.find_operation(pos1);
+    iAssert(op.getType() == plus, "Test findOperation");
    // iAssert(input2.getPos() == 3, "Test getPos findOperation");
+    Token n_token = input2.nextToken(pos1);
+    iAssert(n_token.getType() == number, "Test getType");
+    iAssert(n_token.getValue<double>() == 5, "Test getValue");
+
+
+
+    ++pos1;
+    Input r_input2 = input2.find_expression(pos1);
+    SmartPtr<NodeBase> exp2_1(parser.parse(r_input2));
+    iAssert(exp2_1.isValid(), "root node is not null");
+    iAssert(exp2_1->eval() == 11, "Test 2");
 
 
  //   parser.findLeftOperand(input2);
    // iAssert(input2.getPos() == 5, "Test getPos findLeftOperand");
+    {
+        SmartPtr<NodeBase> exp(parser.parse(input2));
+        std::cout << exp->eval();
+        iAssert(exp->eval() == 16, "Test 2");
+    }
 
-    SmartPtr<NodeBase> exp2(parser.parse(input2));
-    iAssert(exp2->eval() == 16, "Test 2");
+    {
+        str = "(+ 1 1)";
+        Input input1(str);// = new Input(str);
+        SmartPtr<NodeBase> exp1(parser.parse(input1));
+        iAssert(exp1->eval() == 2, "Test 1");
 
-    str = "(+ 1 1)";
-    Input input1(str);// = new Input(str);
-    SmartPtr<NodeBase> exp1(parser.parse(input1));
-    iAssert(exp1->eval() == 2, "Test 1");
+    }
 
     str = str = "(* (- 1 (+ 1 1)) (+ 1 1))";
     Input input3(str);// = new Input(str);
@@ -116,7 +166,8 @@ void test_Parser()
 void performTests()
 {
     test_nodes();
-    test_Parser();
+    test_Input();
+   // test_Parser();
 }
 
 
