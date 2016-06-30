@@ -4,24 +4,24 @@
 #include <cstdlib>
 #include <iostream>
 
-//const char EXPRESSION = 'E';
-//const char NUMBER = 'N';
-//const size_t toCharAfterSpace = 1;
-size_t position = 0;
-
-NodeBase* Parser::parse(Input &input)
+NodeBase* Parser::parse(std::string string)
 {
-    if (!input.isValid())
+    if (string.empty())
     {
         return NULL;
     }
+    Input input(string);
     if (!input.getStr().empty())
     {
        input.splitIntoTokens();
     }
 
-    Token operation = input.find_operation(position);
-    ++position;
+    size_t pos = input.find_operation();
+    if (pos == -1)
+    {
+        return NULL;
+    }
+    Token operation = input.getToken(pos);
     if (!input.isValid())
     {
         return NULL;
@@ -35,46 +35,39 @@ NodeBase* Parser::parse(Input &input)
     return binary_operation(operation.getType(), left, right);
 }
 
-//token_Value Parser::findOperation(Input &input)
-//{
-//    //input.setPos(0);
-//    char Operation = input.find_operation_from(position);
-//    //input.setPos(input.getPos()+2);
-//    return Operation;
-//}
 
 NodeBase *Parser::findLeftOperand(Input &input)
 {  
     NodeBase *node;
-    Token next_token = input.nextToken(position);
-    ++position;
-    switch (next_token.getType())
+    Token curr_token = input.getToken();
+    switch (curr_token.getType())
     {
     case LP:
     {
-        std::vector<Token> exp = input.find_expression(position);
+       // std::cout << "left LP " << " " << curr_token.getValue<std::string>() << std::endl;
+        std::vector<Token> exp = input.find_expression();
         Input leftOperand(exp);
+        leftOperand.convertIntoString();
 //        if (!input.isValid())
 //        {
 //            node = NULL;
 //            break;
 //        }
-        position = position + exp.size();
-        node = parse(leftOperand);
+        node = parse(leftOperand.getStr());
         break;
     }
     case number:
     {
+     //   std::cout << "left number " << " " << curr_token.getValue<std::string>()  << std::endl;
         if (!input.isValid())
         {
-            node = NULL;
-            break;
+            return NULL;
         }
-        node = new Node(input.find_number(position).getValue<double>());
-        ++position;
+        node = new Node(input.find_number().getValue<double>());
         break;
     }
     default:
+    //    std::cout << "left defoult " << " " << curr_token.getValue<std::string>()  << std::endl;
         node = NULL;
         break;
     }
@@ -84,32 +77,34 @@ NodeBase *Parser::findLeftOperand(Input &input)
 NodeBase *Parser::findRightOperand(Input &input)
 { 
     NodeBase *node;
-    Token next_token = input.nextToken(position);
-    switch (next_token.getType())
+    Token curr_token = input.getToken();
+    switch (curr_token.getType())
     {
     case LP:
     {
-        std::vector<Token> exp = input.find_expression(position);
+   //     std::cout << "right LP " << " " << curr_token.getValue<std::string>() << std::endl;
+        std::vector<Token> exp = input.find_expression();
         Input rightOperand(exp);
+        rightOperand.convertIntoString();
 //        if (!input.isValid())
 //        {
 //            return NULL;
 //        }
-        position = position + exp.size();
-        node = parse(rightOperand);
+        node = parse(rightOperand.getStr());
         break;
     }
     case number:
     {
+   //     std::cout << "right number " << " " << curr_token.getValue<std::string>() << std::endl;
         if (!input.isValid())
         {
             return NULL;
         }
-        node = new Node(input.find_number(position).getValue<double>());
-        ++position;
+        node = new Node(input.find_number().getValue<double>());
         break;
     }
     default:
+ //       std::cout << "right default " << " " << curr_token.getValue<std::string>() << std::endl;
         node = NULL;
         break;
     }
